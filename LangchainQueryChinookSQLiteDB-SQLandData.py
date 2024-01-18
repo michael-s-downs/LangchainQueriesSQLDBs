@@ -22,7 +22,7 @@ wrongSqlQuery = "Select * From Album"
 def main():
     # Set the title and subtitle of the app
     st.title("🦜🔗 Talk to a SQL DB using LLMs")
-    st.image('.././assets/sqliteERD.png')
+    st.image('assets/sqliteERD.png')
     st.subheader('This example returns BOTH the SQL AND its execution.')
     question = st.text_input("Ask a question (query/prompt)")
     if st.button("Submit Query", type="primary"):
