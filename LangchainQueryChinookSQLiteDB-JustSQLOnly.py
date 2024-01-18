@@ -27,9 +27,6 @@ def main():
         sql_query = chain.invoke({"question": question})
         st.subheader("This is the SQL:")
         st.write(sql_query)
-       #st.subheader("This is the Data from executing the SQL:")
-        #/df = db.run(sql_query)
-        #st.dataframe(df)
 
 if __name__ == '__main__':
     main()
