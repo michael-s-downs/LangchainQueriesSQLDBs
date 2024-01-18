@@ -1,11 +1,7 @@
 import os
 import streamlit as st
 from dotenv import load_dotenv
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.utilities import SQLDatabase
-from langchain.agents import create_sql_agent
-from langchain.agents.agent_toolkits import SQLDatabaseToolkit
-from langchain.agents.agent_types import AgentType
 from langchain.chains.sql_database.query import create_sql_query_chain
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities import SQLDatabase
