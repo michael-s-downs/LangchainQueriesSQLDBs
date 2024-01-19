@@ -17,10 +17,8 @@ DB_ABS_PATH=os.getenv("DB_ABS_PATH")
 db = SQLDatabase.from_uri("sqlite:///{DB_ABS_PATH}")
 chain = create_sql_query_chain(llm=ChatOpenAI(temperature=0,model="gpt-3.5-turbo-0613"), db=db)
 
-wrongSqlQuery = "Select * From Album"
-
 def main():
-    # Set the title and subtitle of the app
+    # Set the title and subtitle of the app (title is the main category, subtitle is particular example)
     st.title("🦜🔗 Talk to a SQL DB using LLMs")
     st.image('assets/sqliteERD.png')
     st.subheader('This example returns BOTH the SQL AND its execution.')
