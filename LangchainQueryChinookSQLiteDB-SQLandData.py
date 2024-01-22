@@ -12,9 +12,10 @@ import ast
 load_dotenv()
 
 #set up some local variables
-OPENAI_API_KEY= os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+DB_ABS_PATH = os.getenv("DB_ABS_PATH")
 
-db = SQLDatabase.from_uri("sqlite:///LangchainQueriesSQLDBs/dbchinook/Chinook.db")
+db = SQLDatabase.from_uri(f"sqlite:///{DB_ABS_PATH}")
 chain = create_sql_query_chain(llm=ChatOpenAI(temperature=0,model="gpt-3.5-turbo-0613"), db=db)
 
 def main():
