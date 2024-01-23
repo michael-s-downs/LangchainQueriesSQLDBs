@@ -49,12 +49,6 @@ def main():
                 st.subheader("This is the Data from running that SQL:")
                 response = db.run(sql_query)
 
-        # message = {"role": "assistant", "content": response}
-        # st.session_state.messages.append(message)
-
-        # Store response in session state
-        # st.session_state['response'] = response
-
         # convert result to table
         data = ast.literal_eval(response) # convert str to list
         df = pd.DataFrame(data)
