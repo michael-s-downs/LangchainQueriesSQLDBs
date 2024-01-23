@@ -5,6 +5,7 @@ from langchain.utilities import SQLDatabase
 from langchain.chains.sql_database.query import create_sql_query_chain
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities import SQLDatabase
+from langchain_community.tools.sql_database.tool import InfoSQLDatabaseTool
 import pandas as pd
 import ast
 
@@ -26,7 +27,7 @@ def main():
 
     # # Initialize the chat messages history
     if "messages" not in st.session_state.keys():
-        st.session_state.messages = [{"role": "assistant", "content": "How can I help?"}]
+        st.session_state.messages = [{"role": "assistant", "content": "Hi I'm OptiGPT. How can I help?"}]
 
     # Prompt for user input and save
     if prompt := st.chat_input():
@@ -42,20 +43,37 @@ def main():
         # Call LLM
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-
                 sql_query = chain.invoke({"question": prompt})
                 st.subheader("This is the SQL you asked for:")
                 st.write(sql_query)
                 st.subheader("This is the Data from running that SQL:")
                 response = db.run(sql_query)
 
-        message = {"role": "assistant", "content": response}
-        st.session_state.messages.append(message)
+        # message = {"role": "assistant", "content": response}
+        # st.session_state.messages.append(message)
+
+        # Store response in session state
+        # st.session_state['response'] = response
 
         # convert result to table
         data = ast.literal_eval(response) # convert str to list
         df = pd.DataFrame(data)
-        st.dataframe(df)
+        st.session_state['df'] = df
+        st.dataframe(st.session_state['df'])
+        st.session_state['response'] = df
+
+        message = {"role": "assistant", "content": df}
+        st.session_state.messages.append(message)
+
+        # Convert DataFrame to CSV
+        csv = df.to_csv(index=False)
+
+        st.download_button(
+            label="Download",
+            data=csv,
+            file_name='data.csv',
+            mime='text/csv',
+        )
 
 if __name__ == '__main__':
     main()
