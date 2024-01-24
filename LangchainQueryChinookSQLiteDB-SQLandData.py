@@ -8,6 +8,7 @@ from langchain.utilities import SQLDatabase
 from langchain_community.tools.sql_database.tool import InfoSQLDatabaseTool
 import pandas as pd
 import ast
+import base64
 
 # Load environment variables from .env file (Optional)
 load_dotenv()
@@ -46,7 +47,7 @@ def main():
                 sql_query = chain.invoke({"question": prompt})
                 st.subheader("This is the SQL you asked for:")
                 st.write(sql_query)
-                st.subheader("This is the Data from running that SQL:")
+                sql_subheader = "### This is the SQL you asked for:"
                 response = db.run(sql_query)
 
         # convert result to table
@@ -56,18 +57,36 @@ def main():
         st.dataframe(st.session_state['df'])
         st.session_state['response'] = df
 
+        message = {"role": "assistant", "content": f"{sql_subheader}\n{sql_query}"}
+        st.session_state.messages.append(message)
         message = {"role": "assistant", "content": df}
         st.session_state.messages.append(message)
 
         # Convert DataFrame to CSV
         csv = df.to_csv(index=False)
 
-        st.download_button(
-            label="Download",
-            data=csv,
-            file_name='data.csv',
-            mime='text/csv',
-        )
+        col1, col2, col3 = st.columns([0.75, 0.75, 10])
+
+        with col1:
+            if st.button("👍"):
+                # Action to perform only when thumbs up is clicked
+                thumbs_up_message = "You clicked Thumbs Up!"
+                st.session_state.messages.append({"role": "assistant", "content": thumbs_up_message})
+
+
+        with col2:
+            if st.button("👎"):
+                thumbs_down_message = "You clicked Thumbs Down!"
+                st.session_state.messages.append({"role": "assistant", "content": thumbs_down_message})
+        
+        
+        with col3:
+            st.download_button(
+                label=":arrow_down:",
+                data=csv,
+                file_name='data.csv',
+                mime='text/csv',
+            )
 
 if __name__ == '__main__':
     main()
