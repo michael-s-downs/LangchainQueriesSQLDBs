@@ -5,8 +5,13 @@ from langchain.utilities import SQLDatabase
 from langchain.chains.sql_database.query import create_sql_query_chain
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities import SQLDatabase
+from langchain_community.tools.sql_database.tool import InfoSQLDatabaseTool
 import pandas as pd
 import ast
+from azure.identity import DefaultAzureCredential
+from azure.identity import InteractiveBrowserCredential
+from langchain_community.agent_toolkits import PowerBIToolkit, create_pbi_agent
+from langchain_community.utilities.powerbi import PowerBIDataset
 
 # Load environment variables from .env file (Optional)
 load_dotenv()
@@ -16,7 +21,35 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DB_ABS_PATH = os.getenv("DB_ABS_PATH")
 
 db = SQLDatabase.from_uri(f"sqlite:///{DB_ABS_PATH}")
-chain = create_sql_query_chain(llm=ChatOpenAI(temperature=0,model="gpt-3.5-turbo-0613"), db=db)
+#chain = create_sql_query_chain(llm=ChatOpenAI(temperature=0,model="gpt-3.5-turbo-0613"), db=db)
+
+# Initialize the Language Model
+llm = ChatOpenAI(
+    temperature=0.5, max_tokens=1000, model_name="gpt-3.5-turbo", verbose=True
+)
+
+#If we can use default authentication...
+credential=DefaultAzureCredential()
+
+#If we must use browser authentication...
+#credential=InteractiveBrowserCredential()
+
+
+#Initialize the PowerBI Toolkit
+# powerbi = PowerBIDataset(
+#     dataset_id="f0ac68d5-959a-4706-82dc-d7ce5e229f1d",
+#     table_names=["Album", "Artist", "Customer"],
+#     credential=credential.credentials[1],
+# )
+
+powerbi = PowerBIDataset(
+    dataset_id="f0ac68d5-959a-4706-82dc-d7ce5e229f1d",
+    table_names=["Album", "Artist", "Customer"],
+    token='34657b7b-0a76-47c9-bb4f-70110bb60f4b')
+
+# Create the Power BI agent
+toolkit = PowerBIToolkit(powerbi=powerbi, llm=llm, output_token_limit=100)
+agent_executor = create_pbi_agent(llm=llm, toolkit=toolkit, verbose=True)
 
 def main():
     # Set the title and subtitle of the app (title is the main category, subtitle is particular example)
@@ -42,11 +75,15 @@ def main():
         # Call LLM
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):
-                sql_query = chain.invoke({"question": prompt})
-                st.subheader("This is the SQL you asked for:")
-                st.write(sql_query)
+
+                # Example: Describe a table
+                #dax_query = agent_executor.run({prompt})
+
+                #sql_query = chain.invoke({"question": prompt})
+                #st.subheader("This is the DAX you asked for:")
+                #st.write(dax_query)
                 sql_subheader = "### This is the SQL you asked for:"
-                response = db.run(sql_query)
+                response = agent_executor.run({prompt})
 
         # convert result to table
         data = ast.literal_eval(response) # convert str to list
@@ -55,10 +92,10 @@ def main():
         st.dataframe(st.session_state['df'])
         st.session_state['response'] = df
 
-        message = {"role": "assistant", "content": f"{sql_subheader}\n{sql_query}"}
-        st.session_state.messages.append(message)
-        message = {"role": "assistant", "content": df}
-        st.session_state.messages.append(message)
+        #message = {"role": "assistant", "content": f"{sql_subheader}\n{sql_query}"}
+        #st.session_state.messages.append(message)
+        #message = {"role": "assistant", "content": df}
+        #st.session_state.messages.append(message)
 
         # Convert DataFrame to CSV
         csv = df.to_csv(index=False)
