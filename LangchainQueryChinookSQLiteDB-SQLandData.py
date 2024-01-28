@@ -14,8 +14,6 @@ load_dotenv()
 
 #set up some local variables
 OPENAI_API_KEY= os.getenv("OPENAI_API_KEY")
-#DB_ABS_PATH=os.getenv("DB_ABS_PATH")
-#DB_REL_PATH = "dbchinook/Chinook.db"
 
 db = SQLDatabase.from_uri("sqlite:///dbchinook/Chinook.db")
 chain = create_sql_query_chain(llm=ChatOpenAI(temperature=0,model="gpt-3.5-turbo-0613"), db=db)
@@ -25,7 +23,6 @@ def main():
     st.title("🦜🔗 Talk to a SQL DB using LLMs")
     st.image('assets/sqliteERD.png')
     st.subheader('This example returns BOTH the SQL AND its execution.')
-    st.subheader('this version has the test SQL')
     question = st.text_input("Ask a question (query/prompt)")
     if st.button("Submit Query", type="primary"):
         sql_query = chain.invoke({"question": question})
